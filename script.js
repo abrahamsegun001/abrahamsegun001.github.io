@@ -1,5 +1,5 @@
 // ============================================================
-// Abraham Oluwasegun — Portfolio interactivity
+// Abraham Oluwasegun : Portfolio interactivity
 // ============================================================
 
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -11,11 +11,13 @@ if (navToggle && mobileMenu) {
   navToggle.addEventListener("click", () => {
     mobileMenu.classList.toggle("open");
     navToggle.textContent = mobileMenu.classList.contains("open") ? "✕" : "☰";
+    navToggle.setAttribute("aria-expanded", String(mobileMenu.classList.contains("open")));
   });
   mobileMenu.querySelectorAll("a").forEach((a) =>
     a.addEventListener("click", () => {
       mobileMenu.classList.remove("open");
       navToggle.textContent = "☰";
+      navToggle.setAttribute("aria-expanded", "false");
     })
   );
 }
@@ -55,25 +57,8 @@ if ("IntersectionObserver" in window && !prefersReducedMotion) {
   revealEls.forEach((el) => el.classList.add("is-visible"));
 }
 
-/* ---------------- copy email toast ---------------- */
-const toast = document.querySelector(".toast");
-function showToast(msg) {
-  if (!toast) return;
-  toast.textContent = msg;
-  toast.classList.add("show");
-  clearTimeout(showToast._t);
-  showToast._t = setTimeout(() => toast.classList.remove("show"), 2200);
-}
-document.querySelectorAll("[data-copy-email]").forEach((el) => {
-  el.addEventListener("click", (e) => {
-    e.preventDefault();
-    const email = el.getAttribute("data-copy-email");
-    navigator.clipboard?.writeText(email).then(() => showToast("Email copied — " + email));
-  });
-});
-
 /* ============================================================
-   Hero canvas — a small live spiking-network simulation.
+   Hero canvas : a small live spiking-network simulation.
    Nodes are neurons; edges are synapses. Activity (a light
    pulse) periodically originates at a random node and
    propagates outward along connections, echoing the widefield
@@ -109,7 +94,9 @@ document.querySelectorAll("[data-copy-email]").forEach((el) => {
     nodes = [];
     for (let i = 0; i < count; i++) {
       nodes.push({
-        x: Math.random() * width,
+        // On wide screens, reserve the more visible activity for the open right side.
+        // On narrow screens, retain a distributed but subdued backdrop.
+        x: width >= 900 ? width * (0.46 + Math.random() * 0.52) : Math.random() * width,
         y: Math.random() * height,
         vx: (Math.random() - 0.5) * 0.12,
         vy: (Math.random() - 0.5) * 0.12,
@@ -162,7 +149,7 @@ document.querySelectorAll("[data-copy-email]").forEach((el) => {
     ctx.lineWidth = 1;
     edges.forEach((e) => {
       const a = nodes[e.a], b = nodes[e.b];
-      const alpha = Math.max(0, 0.16 - e.d / 1400);
+      const alpha = Math.max(0.07, 0.23 - e.d / 1450);
       ctx.strokeStyle = `rgba(${CYAN}, ${alpha})`;
       ctx.beginPath();
       ctx.moveTo(a.x, a.y);
@@ -193,7 +180,7 @@ document.querySelectorAll("[data-copy-email]").forEach((el) => {
       const glow = Math.min(1, n.glow);
       ctx.beginPath();
       ctx.arc(n.x, n.y, n.r + glow * 1.6, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${CYAN}, ${0.35 + glow * 0.6})`;
+      ctx.fillStyle = `rgba(${CYAN}, ${0.52 + glow * 0.44})`;
       if (glow > 0.05) {
         ctx.shadowColor = `rgba(${CYAN}, 0.8)`;
         ctx.shadowBlur = 10 * glow;
